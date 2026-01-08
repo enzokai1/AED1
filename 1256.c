@@ -1,62 +1,94 @@
 #include <stdio.h>
-#include <stdlib.h>
+#include <stdlib.h> 
 
-typedef struct No {
-    int valor;
-    struct No *prox;
-} No;
+struct No {
+    int numero;
+    struct No *proximo;
+};
 
-void inserir(No **tabela, int chave, int m) {
-    int indice = chave % m;
-    No *novo = (No *)malloc(sizeof(No));
-    novo->valor = chave;
-    novo->prox = NULL;
 
+struct No* criar_no(int valor) {
+    struct No* novo = (struct No*) malloc(sizeof(struct No));
+    novo->numero = valor;
+    novo->proximo = NULL;
+    return novo;
+}
+
+
+void inserir_na_tabela(struct No **tabela, int tamanho, int valor) {
+    
+    int indice = valor % tamanho;
+    
+    struct No* novo_no = criar_no(valor);
+
+    // tabela está vazia
     if (tabela[indice] == NULL) {
-        tabela[indice] = novo;
-    } else {
-        No *atual = tabela[indice];
-        while (atual->prox != NULL) {
-            atual = atual->prox;
+        tabela[indice] = novo_no;
+    } 
+    //se tem gente la vai para o fim da lista
+    else {
+        struct No* atual = tabela[indice];
+        
+       
+        while (atual->proximo != NULL) {
+            atual = atual->proximo;
         }
-        atual->prox = novo;
+        
+        
+        atual->proximo = novo_no;
     }
 }
 
 int main() {
-    int n, m, c, chave;
-    
-    scanf("%d", &n);
-    
-    for (int i = 0; i < n; i++) {
-        if (i > 0) printf("\n");
+    int casos_teste;
+    scanf("%d", &casos_teste);
+
+    for (int i = 0; i < casos_teste; i++) {
         
-        scanf("%d %d", &m, &c);
-        
-        No **tabela = (No **)malloc(m * sizeof(No *));
-        for (int j = 0; j < m; j++) {
-            tabela[j] = NULL;
+        if (i > 0) {
+            printf("\n");
         }
+
+        int m_tamanho, c_chaves;
+        scanf("%d %d", &m_tamanho, &c_chaves);
+
+        //alocando dinamicamente
+        struct No **tabela_hash = (struct No **) malloc(m_tamanho * sizeof(struct No *));
+
         
-        for (int j = 0; j < c; j++) {
-            scanf("%d", &chave);
-            inserir(tabela, chave, m);
+        for (int j = 0; j < m_tamanho; j++) {
+            tabela_hash[j] = NULL;
         }
+
         
-        for (int j = 0; j < m; j++) {
+        for (int j = 0; j < c_chaves; j++) {
+            int valor;
+            scanf("%d", &valor);
+            inserir_na_tabela(tabela_hash, m_tamanho, valor);
+        }
+
+        
+        for (int j = 0; j < m_tamanho; j++) {
             printf("%d -> ", j);
-            No *atual = tabela[j];
+            
+            struct No *atual = tabela_hash[j];
+            
             while (atual != NULL) {
-                printf("%d -> ", atual->valor);
-                No *temp = atual;
-                atual = atual->prox;
-                free(temp);
+                printf("%d -> ", atual->numero);
+                
+                
+                struct No *temp = atual;
+                atual = atual->proximo; 
+                free(temp); 
             }
+            
+            
             printf("\\\n");
         }
+
         
-        free(tabela);
+        free(tabela_hash);
     }
-    
+
     return 0;
 }

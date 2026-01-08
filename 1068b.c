@@ -1,82 +1,65 @@
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
 
-typedef struct No {
-    char caractere;
-    struct No* proximo;
-} No;
 
-typedef struct Pilha {
-    No* topo;
-} Pilha;
-
-void inicializarPilha(Pilha *p) {
-    p->topo = NULL;
+char pilha[1005];
+int topo; 
+void inicializar_pilha() {
+    topo = -1; 
 }
 
-int estaVazia(Pilha *p) {
-    return (p->topo == NULL);
+void empilhar(char c) {
+    topo++;
+    pilha[topo] = c;
 }
 
-void empilhar(Pilha *p, char c) {
-    No* novoNo = (No*) malloc(sizeof(No));
-    if (novoNo) {
-        novoNo->caractere = c;
-        novoNo->proximo = p->topo;
-        p->topo = novoNo;
+void desempilhar() {
+    if (topo != -1) {
+        topo--;
     }
 }
 
-void desempilhar(Pilha *p) {
-    if (!estaVazia(p)) {
-        No* temp = p->topo;
-        p->topo = p->topo->proximo;
-        free(temp);
-    }
+int pilha_vazia() {
+    if (topo == -1) return 1;
+    else return 0;
 }
 
-void destruirPilha(Pilha* p) {
-    while (!estaVazia(p)) {
-        desempilhar(p);
-    }
-}
-
-int verificarParenteses(char* expressao) {
-    Pilha p;
-    inicializarPilha(&p);
+int verificar_expressao(char* expressao) {
+    inicializar_pilha();
 
     for (int i = 0; expressao[i] != '\0'; i++) {
         
+        // se for abre parenteses, joga na pilha
         if (expressao[i] == '(') {
-            empilhar(&p, '(');
-            
-        } else if (expressao[i] == ')') {
-            
-            if (estaVazia(&p)) {
-                destruirPilha(&p); 
-                return 0;
-            } else {
-                desempilhar(&p);
-            }
+            empilhar('(');
         }
+        //se for fecha parenteses
+        else if (expressao[i] == ')') {
+           
+            if (pilha_vazia()) {
+                return 0; // incorreto
+            }
+            
+            desempilhar();
+        }
+        
     }
 
-    int resultado = estaVazia(&p);
-    
-    destruirPilha(&p);
-    
-    return resultado;
+    // se sobrou algo na pilha é porque abriu e não fechou
+    if (pilha_vazia()) {
+        return 1; // correto
+    } else {
+        return 0; // incorreto
+    }
 }
 
 int main() {
-    char expressao[1002]; 
+    char expressao[1005];
 
-    while (fgets(expressao, sizeof(expressao), stdin) != NULL) {
+    
+    while (fgets(expressao, 1005, stdin) != NULL) {
         
-        expressao[strcspn(expressao, "\n")] = '\0';
-
-        if (verificarParenteses(expressao)) {
+        if (verificar_expressao(expressao)) {
             printf("correct\n");
         } else {
             printf("incorrect\n");

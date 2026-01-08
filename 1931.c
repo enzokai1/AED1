@@ -1,108 +1,137 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define INFINITO 2000000000
-#define MAX_C 10005
-#define MAX_A 100005 
-#define TAM_HEAP 400000
+int primeira_aresta[10005]; 
+int destino[100005];        
+int peso[100005];           
+int prox_aresta[100005];    
+int indice_aresta = 0;      
 
-int cabeca[MAX_C];
-int ponto[MAX_A];
-int peso[MAX_A];
-int proximo[MAX_A];
-int contador_arestas = 0;
 
-int dist[MAX_C][2];
+int distancia[10005][2];
+
 
 typedef struct {
-    int custo;
-    int u;
-    int paridade;
-} No;
+    int custo_atual;
+    int vertice;
+    int paridade; 
+} Estado;
 
-No heap[TAM_HEAP];
-int tam_heap = 0;
+Estado meu_heap[400000];
+int tamanho_heap = 0;
 
-void adicionar_aresta(int u, int v, int w) {
-    ponto[contador_arestas] = v;
-    peso[contador_arestas] = w;
-    proximo[contador_arestas] = cabeca[u];
-    cabeca[u] = contador_arestas++;
+
+int infinito = 1000000000;
+
+void criar_aresta(int origem, int dest, int custo) {
+    destino[indice_aresta] = dest;
+    peso[indice_aresta] = custo;
+    
+    //o proximo da aresta aponta para o antigo inicio da lista
+    prox_aresta[indice_aresta] = primeira_aresta[origem];
+
+    //inicio da lista vira essa nova aresta
+    primeira_aresta[origem] = indice_aresta;
+    
+    indice_aresta++;
 }
 
-void push(No n) {
-    int i = tam_heap++;
+
+void inserir_no_heap(Estado novo) {
+    int i = tamanho_heap;
+    tamanho_heap++;
+    
     while (i > 0) {
-        int p = (i - 1) / 2;
-        if (heap[p].custo <= n.custo) break;
-        heap[i] = heap[p];
-        i = p;
+        int pai = (i - 1) / 2;
+        if (meu_heap[pai].custo_atual <= novo.custo_atual) {
+            break; 
+        }
+        meu_heap[i] = meu_heap[pai];
+        i = pai;
     }
-    heap[i] = n;
+    meu_heap[i] = novo;
 }
 
-No pop() {
-    No ret = heap[0];
-    No x = heap[--tam_heap];
+
+Estado remover_do_heap() {
+    Estado retorno = meu_heap[0];
+    tamanho_heap--;
+    
+    Estado ultimo = meu_heap[tamanho_heap];
     int i = 0;
-    while (i * 2 + 1 < tam_heap) {
-        int a = i * 2 + 1;
-        int b = i * 2 + 2;
-        if (b < tam_heap && heap[b].custo < heap[a].custo) a = b;
-        if (heap[a].custo >= x.custo) break;
-        heap[i] = heap[a];
-        i = a;
+    
+    while (i * 2 + 1 < tamanho_heap) {
+        int filho_esq = i * 2 + 1;
+        int filho_dir = i * 2 + 2;
+        int menor = filho_esq;
+        
+        if (filho_dir < tamanho_heap && meu_heap[filho_dir].custo_atual < meu_heap[filho_esq].custo_atual) {
+            menor = filho_dir;
+        }
+        
+        if (meu_heap[menor].custo_atual >= ultimo.custo_atual) {
+            break;
+        }
+        
+        meu_heap[i] = meu_heap[menor];
+        i = menor;
     }
-    heap[i] = x;
-    return ret;
+    
+    meu_heap[i] = ultimo;
+    return retorno;
 }
 
 int main() {
     int C, V;
+    
     if (scanf("%d %d", &C, &V) != 2) return 0;
 
+    
     for (int i = 0; i <= C; i++) {
-        cabeca[i] = -1;
-        dist[i][0] = INFINITO;
-        dist[i][1] = INFINITO;
+        primeira_aresta[i] = -1; 
+        distancia[i][0] = infinito; 
+        distancia[i][1] = infinito;
     }
 
     for (int i = 0; i < V; i++) {
         int u, v, w;
         scanf("%d %d %d", &u, &v, &w);
-        adicionar_aresta(u, v, w);
-        adicionar_aresta(v, u, w);
+        criar_aresta(u, v, w);
+        criar_aresta(v, u, w);
     }
 
-    dist[1][0] = 0;
-    No inicio = {0, 1, 0};
-    push(inicio);
+    distancia[1][0] = 0;
+    Estado inicial = {0, 1, 0};
+    inserir_no_heap(inicial);
 
-    while (tam_heap > 0) {
-        No atual = pop();
-        int d = atual.custo;
-        int u = atual.u;
+    while (tamanho_heap > 0) {
+        Estado atual = remover_do_heap();
+        
+        int d = atual.custo_atual;
+        int u = atual.vertice;
         int par = atual.paridade;
+        
+        //ve se o que eu tirei do heap e um caminho pior do que eu conheco, se for pior dou um continue para nao dar time limit   
+        if (d > distancia[u][par]) continue;
 
-        if (d > dist[u][par]) continue;
-
-        for (int e = cabeca[u]; e != -1; e = proximo[e]) {
-            int v = ponto[e];
+        for (int e = primeira_aresta[u]; e != -1; e = prox_aresta[e]) {
+            int v = destino[e];
             int w = peso[e];
             int nova_par = 1 - par;
 
-            if (dist[u][par] + w < dist[v][nova_par]) {
-                dist[v][nova_par] = dist[u][par] + w;
-                No proximo_no = {dist[v][nova_par], v, nova_par};
-                push(proximo_no);
+            if (distancia[u][par] + w < distancia[v][nova_par]) {
+                distancia[v][nova_par] = distancia[u][par] + w;
+                
+                Estado proximo = {distancia[v][nova_par], v, nova_par};
+                inserir_no_heap(proximo);
             }
         }
     }
 
-    if (dist[C][0] == INFINITO) {
+    if (distancia[C][0] == infinito) {
         printf("-1\n");
     } else {
-        printf("%d\n", dist[C][0]);
+        printf("%d\n", distancia[C][0]);
     }
 
     return 0;

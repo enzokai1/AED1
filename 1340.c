@@ -1,120 +1,122 @@
 #include <stdio.h>
-#include <string.h>
+//pilha
+int pilha[1005];
+int topo_pilha;
 
-#define MAX_N 1001
+// fila
+int fila[1005];
+int inicio_fila, fim_fila;
 
-int stack[MAX_N];
-int top;
-
-void stack_init() { top = -1; }
-int  stack_isEmpty() { return (top == -1); }
-void stack_push(int x) { stack[++top] = x; }
-int  stack_pop() { return stack[top--]; }
-
-int queue[MAX_N];
-int front, rear, queue_size;
-
-void queue_init() {
-    front = 0;
-    rear = -1;
-    queue_size = 0;
-}
-int queue_isEmpty() { return (queue_size == 0); }
-void queue_enqueue(int x) {
-    rear = (rear + 1) % MAX_N;
-    queue[rear] = x;
-    queue_size++;
-}
-int queue_dequeue() {
-    int x = queue[front];
-    front = (front + 1) % MAX_N;
-    queue_size--;
-    return x;
-}
-
-int pq[MAX_N];
-int pq_size;
-
-void pq_init() { pq_size = 0; }
-int  pq_isEmpty() { return (pq_size == 0); }
-void pq_add(int x) { pq[pq_size++] = x; }
-
-int pq_remove_max() {
-    if (pq_isEmpty()) return -1; 
-
-    int max_val = -1;
-    int max_idx = -1;
-
-    for (int i = 0; i < pq_size; i++) {
-        if (pq[i] > max_val) {
-            max_val = pq[i];
-            max_idx = i;
-        }
-    }
-
-    pq[max_idx] = pq[pq_size - 1];
-    pq_size--;
-    
-    return max_val;
-}
+// fila de prioridade
+int fila_prio[1005];
+int tam_prio;
 
 int main() {
     int n;
 
+    
     while (scanf("%d", &n) != EOF) {
         
-        stack_init();
-        queue_init();
-        pq_init();
-
-        int is_stack = 1;
-        int is_queue = 1;
-        int is_pq = 1;
+        
+        topo_pilha = 0;
+        
+        inicio_fila = 0;
+        fim_fila = 0;
+        
+        tam_prio = 0;
+        
+       // 1 = pode ser essa estrutura, 0 = impossivel
+        int pode_ser_pilha = 1;
+        int pode_ser_fila = 1;
+        int pode_ser_prio = 1;
 
         for (int i = 0; i < n; i++) {
-            int cmd, x;
-            scanf("%d %d", &cmd, &x);
+            int comando, valor;
+            scanf("%d %d", &comando, &valor);
 
-            if (cmd == 1) {
-                stack_push(x);
-                queue_enqueue(x);
-                pq_add(x);
-            } else { 
+            //coloca o valor nas três estruturas
+            if (comando == 1) {
                 
-                if (is_stack) {
-                    if (stack_isEmpty() || stack_pop() != x) {
-                        is_stack = 0;
+                if (pode_ser_pilha) {
+                    pilha[topo_pilha] = valor;
+                    topo_pilha++;
+                }
+
+                
+                if (pode_ser_fila) {
+                    fila[fim_fila] = valor;
+                    fim_fila++;
+                }
+
+                
+                if (pode_ser_prio) {
+                    fila_prio[tam_prio] = valor;
+                    tam_prio++;
+                }
+            }
+            
+            // vejo se o valor tirado faz sentido com a logica
+            else {
+                
+                if (pode_ser_pilha) {
+                    
+                    if (topo_pilha == 0 || pilha[topo_pilha - 1] != valor) {
+                        pode_ser_pilha = 0; 
+                    } else {
+                        topo_pilha--; 
                     }
                 }
 
-                if (is_queue) {
-                    if (queue_isEmpty() || queue_dequeue() != x) {
-                        is_queue = 0;
+                
+                if (pode_ser_fila) {
+                    
+                    if (inicio_fila == fim_fila || fila[inicio_fila] != valor) {
+                        pode_ser_fila = 0;
+                    } else {
+                        inicio_fila++; 
                     }
                 }
 
-                if (is_pq) {
-                    if (pq_isEmpty() || pq_remove_max() != x) {
-                        is_pq = 0;
+                
+                if (pode_ser_prio) {
+                    if (tam_prio == 0) {
+                        pode_ser_prio = 0;
+                    } else {
+                        
+                        int indice_maior = 0;
+                        int maior_valor = fila_prio[0];
+
+                        for (int k = 1; k < tam_prio; k++) {
+                            if (fila_prio[k] > maior_valor) {
+                                maior_valor = fila_prio[k];
+                                indice_maior = k;
+                            }
+                        }
+
+                        
+                        if (maior_valor != valor) {
+                            pode_ser_prio = 0;
+                        } else {
+                            
+                            fila_prio[indice_maior] = fila_prio[tam_prio - 1];
+                            tam_prio--;
+                        }
                     }
                 }
             }
         }
 
-        int total_possivel = is_stack + is_queue + is_pq;
+        
+        int total_possiveis = pode_ser_pilha + pode_ser_fila + pode_ser_prio;
 
-        if (total_possivel == 0) {
+        if (total_possiveis == 0) {
             printf("impossible\n");
-        } else if (total_possivel > 1) {
+        } else if (total_possiveis > 1) {
             printf("not sure\n");
-        } else { 
-            if (is_stack) {
-                printf("stack\n");
-            } else if (is_queue) {
-                printf("queue\n");
-            } else {
-                printf("priority queue\n");
-            }
+        } else {
+            if (pode_ser_pilha) printf("stack\n");
+            else if (pode_ser_fila) printf("queue\n");
+            else printf("priority queue\n");
         }
     }
 

@@ -1,22 +1,25 @@
 #include <stdio.h>
-int main()
-{
-    int N, i, posicao, menor;
 
-    scanf("%d", &N);
+
+int vetor[1005];
+
+int main() {
+    int n;
+    scanf("%d", &n);
+
     
-    int X[N];
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &vetor[i]);
+    }
 
-    for (int i = 0; i < N; i++)
-    {
-        scanf("%d", &X[i]);
-        if (i == 0)
-        {
-            menor = X[i];
-        }
-        else if (X[i] < menor)
-        {
-            menor = X[i];
+   
+    int menor = vetor[0];
+    int posicao = 0;
+
+   
+    for (int i = 1; i < n; i++) {
+        if (vetor[i] < menor) {
+            menor = vetor[i];
             posicao = i;
         }
     }

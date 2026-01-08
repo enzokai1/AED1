@@ -2,82 +2,113 @@
 #include <stdlib.h>
 #include <math.h>
 
-typedef struct {
-    int x, y;
-} Ponto;
 
-typedef struct {
-    int u, v;
-    double w;
-} Aresta;
+struct Coordenada {
+    int x;
+    int y;
+};
 
-Ponto pessoas[505];
-Aresta arestas[125000];
-int pai[505];
+struct Aresta {
+    int ponto_a;
+    int ponto_b;
+    double distancia;
+};
 
-int buscar(int i) {
-    if (pai[i] == i)
-        return i;
-    return pai[i] = buscar(pai[i]);
+
+struct Coordenada pessoas[505];
+struct Aresta lista_arestas[130000];
+int chefe_grupo[505]; // union-find
+
+// achar a distancia entre dois pontos
+double calcular_distancia(int i, int j) {
+    double dif_x = pessoas[i].x - pessoas[j].x;
+    double dif_y = pessoas[i].y - pessoas[j].y;
+    return sqrt(dif_x * dif_x + dif_y * dif_y);
 }
 
-void unir(int i, int j) {
-    int raiz_i = buscar(i);
-    int raiz_j = buscar(j);
-    if (raiz_i != raiz_j) {
-        pai[raiz_i] = raiz_j;
+// union - find
+int encontrar_chefe(int i) {
+    if (chefe_grupo[i] == i) {
+        return i;
+    }
+    
+    int raiz = encontrar_chefe(chefe_grupo[i]);
+    chefe_grupo[i] = raiz;
+    return raiz;
+}
+
+// junta se eles forem difrentes
+void unir_conjuntos(int i, int j) {
+    int chefe_i = encontrar_chefe(i);
+    int chefe_j = encontrar_chefe(j);
+    
+    if (chefe_i != chefe_j) {
+        chefe_grupo[chefe_i] = chefe_j;
     }
 }
 
-int comparar(const void* a, const void* b) {
-    double diff = ((Aresta*)a)->w - ((Aresta*)b)->w;
-    if (diff < 0) return -1;
-    if (diff > 0) return 1;
+// comparacao para o quicksort
+int comparar_arestas(const void* a, const void* b) {
+    struct Aresta* aresta1 = (struct Aresta*) a;
+    struct Aresta* aresta2 = (struct Aresta*) b;
+    
+    if (aresta1->distancia < aresta2->distancia) return -1;
+    if (aresta1->distancia > aresta2->distancia) return 1;
     return 0;
 }
 
-double dist(int i, int j) {
-    double dx = pessoas[i].x - pessoas[j].x;
-    double dy = pessoas[i].y - pessoas[j].y;
-    return sqrt(dx * dx + dy * dy);
-}
-
 int main() {
-    int c, n;
-    scanf("%d", &c);
+    int casos_teste;
+    if (scanf("%d", &casos_teste) != 1) return 0;
 
-    while (c--) {
+    while (casos_teste > 0) {
+        int n;
         scanf("%d", &n);
+
+        
         for (int i = 0; i < n; i++) {
             scanf("%d %d", &pessoas[i].x, &pessoas[i].y);
-            pai[i] = i;
+            chefe_grupo[i] = i; 
         }
 
-        int k = 0;
+        
+        int total_arestas = 0;
         for (int i = 0; i < n; i++) {
+            //fiz isso pra nao repetir aresta
             for (int j = i + 1; j < n; j++) {
-                arestas[k].u = i;
-                arestas[k].v = j;
-                arestas[k].w = dist(i, j);
-                k++;
+                lista_arestas[total_arestas].ponto_a = i;
+                lista_arestas[total_arestas].ponto_b = j;
+                lista_arestas[total_arestas].distancia = calcular_distancia(i, j);
+                total_arestas++;
             }
         }
 
-        qsort(arestas, k, sizeof(Aresta), comparar);
+        //menor para maior
+        qsort(lista_arestas, total_arestas, sizeof(struct Aresta), comparar_arestas);
 
-        double total = 0;
-        int arestas_count = 0;
+        // implementando o algoritmo de kruskal
+        double custo_total = 0.0;
+        int arestas_usadas = 0;
 
-        for (int i = 0; i < k; i++) {
-            if (buscar(arestas[i].u) != buscar(arestas[i].v)) {
-                unir(arestas[i].u, arestas[i].v);
-                total += arestas[i].w;
-                arestas_count++;
+        for (int i = 0; i < total_arestas; i++) {
+            int u = lista_arestas[i].ponto_a;
+            int v = lista_arestas[i].ponto_b;
+
+            
+            if (encontrar_chefe(u) != encontrar_chefe(v)) {
+                unir_conjuntos(u, v);
+                custo_total = custo_total + lista_arestas[i].distancia;
+                arestas_usadas++;
             }
-            if (arestas_count == n - 1) break;
+
+            
+            if (arestas_usadas == n - 1) break;
         }
 
-        printf("%.2lf\n", total / 100.0);
+        
+        printf("%.2lf\n", custo_total / 100.0);
+
+        casos_teste--;
     }
 
     return 0;

@@ -2,146 +2,162 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct No {
-    char valor;
+
+struct No {
+    char letra;
     struct No *esquerda;
     struct No *direita;
-} No;
+};
 
-No* criarNo(char valor) {
-    No* novoNo = (No*)malloc(sizeof(No));
-    if (novoNo == NULL) {
-        exit(1); 
-    }
-    novoNo->valor = valor;
-    novoNo->esquerda = NULL;
-    novoNo->direita = NULL;
-    return novoNo;
+
+struct No* criar_no(char c) {
+    
+    struct No* novo = (struct No*) malloc(sizeof(struct No));
+    
+   
+    novo->letra = c;
+    novo->esquerda = NULL;
+    novo->direita = NULL;
+    
+    return novo;
 }
 
-No* inserir(No* raiz, char valor) {
+// arvore binaria de pesquisa
+struct No* inserir(struct No* raiz, char c) {
+    
     if (raiz == NULL) {
-        return criarNo(valor);
+        return criar_no(c);
     }
 
-    if (valor < raiz->valor) {
-        raiz->esquerda = inserir(raiz->esquerda, valor);
-    } else {
-        raiz->direita = inserir(raiz->direita, valor);
+    // se a letra for menor, vai para a esquerda
+    if (c < raiz->letra) {
+        raiz->esquerda = inserir(raiz->esquerda, c);
     }
-    
+    // se for maior, vai para a direita
+    else {
+        raiz->direita = inserir(raiz->direita, c);
+    }
+
     return raiz;
 }
 
-int pesquisar(No* raiz, char valor) {
+
+int buscar(struct No* raiz, char c) {
     if (raiz == NULL) {
         return 0; 
     }
-    
-    if (raiz->valor == valor) {
+
+    if (raiz->letra == c) {
         return 1; 
     }
+
     
-    if (valor < raiz->valor) {
-        return pesquisar(raiz->esquerda, valor);
+    if (c < raiz->letra) {
+        return buscar(raiz->esquerda, c);
     } else {
-        return pesquisar(raiz->direita, valor);
+        return buscar(raiz->direita, c);
     }
 }
 
-void liberarArvore(No* raiz) {
-    if (raiz == NULL) {
-        return;
+
+void prefixa(struct No* raiz, int *primeiro) {
+    if (raiz == NULL) return;
+
+    if (*primeiro == 1) {
+        printf("%c", raiz->letra);
+        *primeiro = 0;
+    } else {
+        printf(" %c", raiz->letra);
     }
-    liberarArvore(raiz->esquerda);
-    liberarArvore(raiz->direita);
+
+    prefixa(raiz->esquerda, primeiro);
+    prefixa(raiz->direita, primeiro);
+}
+
+
+void infixa(struct No* raiz, int *primeiro) {
+    if (raiz == NULL) return;
+
+    infixa(raiz->esquerda, primeiro);
+
+    if (*primeiro == 1) {
+        printf("%c", raiz->letra);
+        *primeiro = 0;
+    } else {
+        printf(" %c", raiz->letra);
+    }
+
+    infixa(raiz->direita, primeiro);
+}
+
+
+void posfixa(struct No* raiz, int *primeiro) {
+    if (raiz == NULL) return;
+
+    posfixa(raiz->esquerda, primeiro);
+    posfixa(raiz->direita, primeiro);
+
+    if (*primeiro == 1) {
+        printf("%c", raiz->letra);
+        *primeiro = 0;
+    } else {
+        printf(" %c", raiz->letra);
+    }
+}
+
+
+void liberar_arvore(struct No* raiz) {
+    if (raiz == NULL) return;
+    
+    liberar_arvore(raiz->esquerda);
+    liberar_arvore(raiz->direita);
     free(raiz);
 }
 
-void imprimirPreOrdem(No* raiz, int* ehPrimeiro) {
-    if (raiz == NULL) {
-        return;
-    }
-
-    if (*ehPrimeiro) {
-        printf("%c", raiz->valor);
-        *ehPrimeiro = 0; 
-    } else {
-        printf(" %c", raiz->valor); 
-    }
-    imprimirPreOrdem(raiz->esquerda, ehPrimeiro);
-    imprimirPreOrdem(raiz->direita, ehPrimeiro);
-}
-
-void imprimirEmOrdem(No* raiz, int* ehPrimeiro) {
-    if (raiz == NULL) {
-        return;
-    }
-
-    imprimirEmOrdem(raiz->esquerda, ehPrimeiro);
-    
-    if (*ehPrimeiro) {
-        printf("%c", raiz->valor);
-        *ehPrimeiro = 0;
-    } else {
-        printf(" %c", raiz->valor);
-    }
-    
-    imprimirEmOrdem(raiz->direita, ehPrimeiro);
-}
-
-void imprimirPosOrdem(No* raiz, int* ehPrimeiro) {
-    if (raiz == NULL) {
-        return;
-    }
-
-    imprimirPosOrdem(raiz->esquerda, ehPrimeiro);
-    imprimirPosOrdem(raiz->direita, ehPrimeiro);
-    
-    if (*ehPrimeiro) {
-        printf("%c", raiz->valor);
-        *ehPrimeiro = 0;
-    } else {
-        printf(" %c", raiz->valor);
-    }
-}
-
 int main() {
-    No* raiz = NULL;
-    char comando[20];
-    char valor;
+    struct No* raiz = NULL;
+    char comando[50];
+    char letra;
 
-    while (scanf("%s", comando) != EOF) {
+    
+    while (scanf("%s", comando) == 1) {
+        
         
         if (strcmp(comando, "I") == 0) {
-            scanf(" %c", &valor); 
-            raiz = inserir(raiz, valor);
+            scanf(" %c", &letra); 
+            raiz = inserir(raiz, letra);
+        }
         
-        } else if (strcmp(comando, "P") == 0) {
-            scanf(" %c", &valor);
-            if (pesquisar(raiz, valor)) {
-                printf("%c existe\n", valor);
+        
+        else if (strcmp(comando, "P") == 0) {
+            scanf(" %c", &letra);
+            if (buscar(raiz, letra)) {
+                printf("%c existe\n", letra);
             } else {
-                printf("%c nao existe\n", valor);
+                printf("%c nao existe\n", letra);
             }
-
-        } else if (strcmp(comando, "INFIXA") == 0) {
-            int ehPrimeiro = 1; 
-            imprimirEmOrdem(raiz, &ehPrimeiro);
-            printf("\n");
-
-        } else if (strcmp(comando, "PREFIXA") == 0) {
-            int ehPrimeiro = 1; 
-            imprimirPreOrdem(raiz, &ehPrimeiro);
-            printf("\n");
-
-        } else if (strcmp(comando, "POSFIXA") == 0) {
-            int ehPrimeiro = 1; 
-            imprimirPosOrdem(raiz, &ehPrimeiro);
-            printf("\n");
+        }
+        
+        
+        else {
+            int flag_primeiro = 1; 
+            
+            if (strcmp(comando, "PREFIXA") == 0) {
+                prefixa(raiz, &flag_primeiro);
+            } 
+            else if (strcmp(comando, "INFIXA") == 0) {
+                infixa(raiz, &flag_primeiro);
+            } 
+            else if (strcmp(comando, "POSFIXA") == 0) {
+                posfixa(raiz, &flag_primeiro);
+            }
+            
+            printf("\n"); 
         }
     }
 
-    liberarArvore(raiz);
+    
+    liberar_arvore(raiz);
+    
     return 0;
 }

@@ -1,67 +1,69 @@
 #include <stdio.h>
 
-#define MAX_TAM 100 
+//fila circular
+int fila[100];
+int inicio; 
+int fim;   
+int quantidade;
 
-int fila[MAX_TAM];
-int frente;
-int tras;
-int tamanho;
-
-void inicializarFila() {
-    frente = 0;
-    tras = -1;
-    tamanho = 0;
+void limpar_fila() {
+    inicio = 0;
+    fim = -1;
+    quantidade = 0;
 }
 
-void enfileirar(int valor) {
-    tras = (tras + 1) % MAX_TAM;
-    fila[tras] = valor;
-    tamanho++;
+void inserir(int valor) {
+    
+    fim = (fim + 1) % 100;
+    fila[fim] = valor;
+    quantidade++;
 }
 
-int desenfileirar() {
-    int valor = fila[frente];
-    frente = (frente + 1) % MAX_TAM;
-    tamanho--;
+int remover() {
+    int valor = fila[inicio];
+    inicio = (inicio + 1) % 100;  // pra fazer a fila ser circular
+    quantidade--;
     return valor;
-}
-
-int getTamanho() {
-    return tamanho;
 }
 
 int main() {
     int n;
-    
+
+   
     while (scanf("%d", &n) == 1 && n != 0) {
         
-        inicializarFila();
+        limpar_fila();
+        
+        
         for (int i = 1; i <= n; i++) {
-            enfileirar(i);
-        }
-        
-        int descartadas[MAX_TAM];
-        int countDescartadas = 0;
-        
-        while (getTamanho() >= 2) {
-            
-            descartadas[countDescartadas] = desenfileirar();
-            countDescartadas++;
-            
-            int cartaParaMover = desenfileirar();
-            enfileirar(cartaParaMover);
+            inserir(i);
         }
         
         printf("Discarded cards:");
-        for (int i = 0; i < countDescartadas; i++) {
-            printf(" %d", descartadas[i]);
-            if (i < countDescartadas - 1) {
-                printf(",");
+        
+        
+        int primeiro_descarte = 1; 
+        
+        while (quantidade >= 2) {
+           
+            int carta_fora = remover();
+            
+            if (primeiro_descarte) {
+                printf(" %d", carta_fora);
+                primeiro_descarte = 0;
+            } else {
+                printf(", %d", carta_fora);
             }
+            
+            
+            int carta_base = remover();
+            inserir(carta_base);
         }
+        
         printf("\n");
         
-        printf("Remaining card: %d\n", desenfileirar());
+        
+        printf("Remaining card: %d\n", remover());
     }
     
     return 0;

@@ -1,93 +1,103 @@
 #include <stdio.h>
-#include <string.h> 
 
-int checarGrupo(int group[9]) {
-    int check[10];
+
+int tabuleiro[9][9];
+
+
+int validar_grupo(int vetor[9]) {
+    int numeros_vistos[10]; 
     
-    for (int i = 0; i < 10; i++) {
-        check[i] = 0;
+    
+    for (int i = 0; i <= 9; i++) {
+        numeros_vistos[i] = 0;
     }
 
     for (int i = 0; i < 9; i++) {
-        int num = group[i];
+        int num = vetor[i];
         
-        if (num < 1 || num > 9 || check[num] == 1) {
+        // nao pode repetir
+        if (num < 1 || num > 9 || numeros_vistos[num] == 1) {
             return 0; 
         }
         
-        check[num] = 1;
+        numeros_vistos[num] = 1; // visto
     }
 
-    return 1; 
+    return 1; // válido
 }
 
 int main() {
-    int n, k;
-    scanf("%d", &n); 
+    int qtd_instancias;
+    scanf("%d", &qtd_instancias);
 
-    int grid[9][9];
-    int tempGrupo[9];
+    int vetor_teste[9]; // vetor temporário para passar para a função
 
-    for (k = 1; k <= n; k++) {
+    for (int k = 1; k <= qtd_instancias; k++) {
+        
         
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
-                scanf("%d", &grid[i][j]);
+                scanf("%d", &tabuleiro[i][j]);
             }
         }
         
-        int ehValido = 1;
+        int eh_valido = 1;
 
+        // verifica linha
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
-                tempGrupo[j] = grid[i][j];
+                vetor_teste[j] = tabuleiro[i][j]; 
             }
-            if (!checarGrupo(tempGrupo)) {
-                ehValido = 0;
-                break; 
+            if (validar_grupo(vetor_teste) == 0) {
+                eh_valido = 0;
+                break;
             }
         }
 
-        if (ehValido) { 
+        // verifica coluna
+        if (eh_valido) {
             for (int j = 0; j < 9; j++) {
                 for (int i = 0; i < 9; i++) {
-                    tempGrupo[i] = grid[i][j];
+                    vetor_teste[i] = tabuleiro[i][j]; 
                 }
-                if (!checarGrupo(tempGrupo)) {
-                    ehValido = 0;
+                if (validar_grupo(vetor_teste) == 0) {
+                    eh_valido = 0;
                     break;
                 }
             }
         }
         
-        if (ehValido) { 
-            for (int startRow = 0; startRow < 9; startRow += 3) {
-                if (!ehValido) break; 
-                
-                for (int startCol = 0; startCol < 9; startCol += 3) {
+        // verifica bloco
+        if (eh_valido) {
+            
+            for (int linha_inicio = 0; linha_inicio < 9; linha_inicio += 3) {
+                for (int col_inicio = 0; col_inicio < 9; col_inicio += 3) {
                     
-                    int idx = 0;
+                    int indice = 0;
+                    
                     for (int i = 0; i < 3; i++) {
                         for (int j = 0; j < 3; j++) {
-                            tempGrupo[idx++] = grid[startRow + i][startCol + j];
+                            vetor_teste[indice] = tabuleiro[linha_inicio + i][col_inicio + j];
+                            indice++;
                         }
                     }
                     
-                    if (!checarGrupo(tempGrupo)) {
-                        ehValido = 0;
+                    if (validar_grupo(vetor_teste) == 0) {
+                        eh_valido = 0;
                         break; 
                     }
                 }
+                if (!eh_valido) break; 
             }
         }
         
         printf("Instancia %d\n", k);
-        if (ehValido) {
+        if (eh_valido) {
             printf("SIM\n");
         } else {
             printf("NAO\n");
         }
-        printf("\n"); 
+        printf("\n");
     }
 
     return 0;

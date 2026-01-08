@@ -1,17 +1,12 @@
 #include <stdio.h>
 #include <string.h>
 
-#define MAX_TAM 1001 
 
-char pilha[MAX_TAM]; 
-int topo;            
+char pilha[1005];
+int topo;
 
-void inicializarPilha() {
-    topo = -1;
-}
-
-int estaVazia() {
-    return (topo == -1);
+void iniciar_pilha() {
+    topo = -1; // pilha vazia
 }
 
 void empilhar(char c) {
@@ -20,44 +15,48 @@ void empilhar(char c) {
 }
 
 void desempilhar() {
-    topo--;
-}
-
-int contarDiamantes(char* mina) {
-    inicializarPilha();
-    int diamantes = 0;
-
-    for (int i = 0; mina[i] != '\0'; i++) {
-        
-        if (mina[i] == '<') {
-            empilhar('<');
-            
-        } else if (mina[i] == '>') {
-            
-            if (!estaVazia()) {
-                desempilhar();
-                diamantes++;
-            }
-        }
+    if (topo != -1) {
+        topo--;
     }
-    
-    return diamantes;
 }
 
 int main() {
-    int N;
-    scanf("%d", &N);
+    int casos_teste;
+    scanf("%d", &casos_teste);
     
-    getchar(); 
+    
+    getchar();
 
-    char mina[MAX_TAM + 2]; 
+    char linha[1005];
 
-    for (int i = 0; i < N; i++) {
-        fgets(mina, sizeof(mina), stdin);
+    for (int k = 0; k < casos_teste; k++) {
         
-        mina[strcspn(mina, "\n")] = '\0';
+        fgets(linha, 1005, stdin);
+        
+        iniciar_pilha();
+        int diamantes = 0;
 
-        printf("%d\n", contarDiamantes(mina));
+        
+        for (int i = 0; linha[i] != '\0'; i++) {
+            
+            // se achou uma metade esquerda do diamante
+            if (linha[i] == '<') {
+                empilhar('<');
+            }
+            
+            // Se achou uma metade direita
+            else if (linha[i] == '>') {
+                
+                if (topo != -1) {
+                    desempilhar(); 
+                    diamantes++;   // forma um par
+                }
+            }
+            
+            
+        }
+
+        printf("%d\n", diamantes);
     }
 
     return 0;

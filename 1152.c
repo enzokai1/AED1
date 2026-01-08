@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-/* --- ESTRUTURA --- */
+
 struct Estrada {
     int origem;
     int destino;

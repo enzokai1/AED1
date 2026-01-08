@@ -2,37 +2,58 @@
 #include <stdlib.h>
 #include <string.h>
 
-int trie[1000005][2];
-int fim[1000005];
-int nos = 1;
+// declarei como matrizes globais porque tava estourando a memoria da pilha dentro do main
+int arvore[1000005][2];   
+int terminou[1000005];    
+int contador_nos = 1;     
 
-void inserir(char *s, int *contagem) {
-    int atual = 0;
-    for (int i = 0; s[i] != '\0'; i++) {
-        int id = (s[i] == ')') ? 1 : 0;
-        if (trie[atual][id] == 0) {
-            trie[atual][id] = nos++;
+//percorre a arvore e retorna 1 se for nova e 0 se for repetido
+int inserir_na_trie(char palavra[]) {
+    int no_atual = 0; 
+    int i = 0;
+    
+    
+    while (palavra[i] != '\0') {
+        int caminho;
+
+        //decide o lado
+        if (palavra[i] == ')') {
+            caminho = 1;
+        } else {
+            caminho = 0;
         }
-        atual = trie[atual][id];
+
+        // se o caminho nao existe, cria um no    
+        if (arvore[no_atual][caminho] == 0) {
+            arvore[no_atual][caminho] = contador_nos;
+            contador_nos++;
+        }
+
+       
+        no_atual = arvore[no_atual][caminho];
+        i++; 
     }
-    if (!fim[atual]) {
-        fim[atual] = 1;
-        (*contagem)++;
+
+    // usei pra ver se ja foi usada antes
+    if (terminou[no_atual] == 0) {
+        terminou[no_atual] = 1; 
+        return 1; 
+    } else {
+        return 0; 
     }
 }
 
 int main() {
-    char s[100005];
-    int contagem = 0;
+    char palavra[100005];
+    int total = 0;
 
-    memset(trie, 0, sizeof(trie));
-    memset(fim, 0, sizeof(fim));
-
-    while (scanf("%s", s) != EOF) {
-        inserir(s, &contagem);
+    
+    while (scanf("%s", palavra) != EOF) {
+        int resultado = inserir_na_trie(palavra);
+        total = total + resultado;
     }
 
-    printf("%d\n", contagem);
+    printf("%d\n", total);
 
     return 0;
 }

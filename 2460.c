@@ -1,53 +1,46 @@
 #include <stdio.h>
-#include <stdlib.h> 
-#include <string.h> 
 
-#define MAX_ID 100001
+int fila[50005];          
+int quem_saiu[100005];    
 
 int main() {
-    int N; 
-    scanf("%d", &N);
+    int qtd_inicial;
+    scanf("%d", &qtd_inicial);
 
-    int *fila_inicial = (int*) malloc(N * sizeof(int));
-    if (fila_inicial == NULL) return 1; 
-
-    for (int i = 0; i < N; i++) {
-        scanf("%d", &fila_inicial[i]);
-    }
-
-    int M; 
-    scanf("%d", &M);
-
-    int *saiu = (int*) calloc(MAX_ID, sizeof(int));
-    if (saiu == NULL) return 1; 
-
-    for (int i = 0; i < M; i++) {
-        int id_que_saiu;
-        scanf("%d", &id_que_saiu);
-        saiu[id_que_saiu] = 1; 
-    }
-
-    int primeiro_a_imprimir = 1; 
     
-    for (int i = 0; i < N; i++) {
-        int id_atual = fila_inicial[i];
-        
-        if (saiu[id_atual] == 0) { 
-            
-            if (primeiro_a_imprimir == 0) {
-                printf(" ");
+    for (int i = 0; i < qtd_inicial; i++) {
+        scanf("%d", &fila[i]);
+    }
+
+    int qtd_sairam;
+    scanf("%d", &qtd_sairam);
+
+    // marcando quem saiu
+    int id_removido;
+    for (int i = 0; i < qtd_sairam; i++) {
+        scanf("%d", &id_removido);
+        quem_saiu[id_removido] = 1; 
+    }
+
+    int primeiro_impresso = 1; // pra nao dar presentation error no beecrowd
+
+    // so imprime quem nao ta marcado
+    for (int i = 0; i < qtd_inicial; i++) {
+        int id_atual = fila[i];
+
+        if (quem_saiu[id_atual] == 0) {
+             
+            // ainda nao pra dar presentation error 
+            if (primeiro_impresso == 1) {
+                printf("%d", id_atual);
+                primeiro_impresso = 0;
+            } else {
+                printf(" %d", id_atual);
             }
-            
-            printf("%d", id_atual);
-            
-            primeiro_a_imprimir = 0;
         }
     }
     
     printf("\n");
-    
-    free(fila_inicial);
-    free(saiu);
 
     return 0;
 }

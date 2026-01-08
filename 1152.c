@@ -1,60 +1,116 @@
 #include <stdio.h>
-#include <stdlib.h>
 
-typedef struct {
+/* --- ESTRUTURA --- */
+struct Estrada {
     int origem;
     int destino;
-    int peso;
-} Aresta;
+    int custo;
+};
 
-Aresta arestas[200005];
-int pai[200005];
+struct Estrada lista_estradas[200005]; 
+struct Estrada auxiliar[200005];       
+int chefe_grupo[200005];               
 
-int buscar(int i) {
-    if (pai[i] == i)
-        return i;
-    return pai[i] = buscar(pai[i]);
-}
+void intercalar(int inicio, int meio, int fim) {
+    int i = inicio;
+    int j = meio + 1;
+    int k = inicio;
 
-void unir(int i, int j) {
-    int raiz_i = buscar(i);
-    int raiz_j = buscar(j);
-    if (raiz_i != raiz_j) {
-        pai[raiz_i] = raiz_j;
+    // compara as duas metades e joga o menor no vetor auxiliar
+    while (i <= meio && j <= fim) {
+        if (lista_estradas[i].custo <= lista_estradas[j].custo) {
+            auxiliar[k] = lista_estradas[i];
+            i++;
+        } else {
+            auxiliar[k] = lista_estradas[j];
+            j++;
+        }
+        k++;
+    }
+
+    // copia o que sobrou da esquerda
+    while (i <= meio) {
+        auxiliar[k] = lista_estradas[i];
+        i++;
+        k++;
+    }
+
+    // copia o que sobrou da direita
+    while (j <= fim) {
+        auxiliar[k] = lista_estradas[j];
+        j++;
+        k++;
+    }
+
+    // devolve os dados ordenados para o vetor original
+    for (i = inicio; i <= fim; i++) {
+        lista_estradas[i] = auxiliar[i];
     }
 }
 
-int comparar(const void* a, const void* b) {
-    return ((Aresta*)a)->peso - ((Aresta*)b)->peso;
+
+void ordenar_por_custo(int inicio, int fim) {
+    if (inicio < fim) {
+        int meio = (inicio + fim) / 2;
+        ordenar_por_custo(inicio, meio);
+        ordenar_por_custo(meio + 1, fim);
+        intercalar(inicio, meio, fim);
+    }
 }
 
+// algoritmo de kruskal
+
+int encontrar_chefe(int i) {
+    if (chefe_grupo[i] == i) return i;
+    return chefe_grupo[i] = encontrar_chefe(chefe_grupo[i]);
+}
+
+void unir_conjuntos(int i, int j) {
+    int chefe_i = encontrar_chefe(i);
+    int chefe_j = encontrar_chefe(j);
+    if (chefe_i != chefe_j) {
+        chefe_grupo[chefe_i] = chefe_j;
+    }
+}
+
+
 int main() {
-    int m, n;
+    int qtd_cidades, qtd_estradas;
 
-    while (scanf("%d %d", &m, &n) && (m != 0 || n != 0)) {
-        long long custo_total = 0;
+    
+    while (scanf("%d %d", &qtd_cidades, &qtd_estradas) && (qtd_cidades != 0 || qtd_estradas != 0)) {
         
-        for (int i = 0; i < n; i++) {
-            scanf("%d %d %d", &arestas[i].origem, &arestas[i].destino, &arestas[i].peso);
-            custo_total += arestas[i].peso;
+        long long custo_total_antes = 0;
+        
+        for (int i = 0; i < qtd_estradas; i++) {
+            scanf("%d %d %d", &lista_estradas[i].origem, 
+                              &lista_estradas[i].destino, 
+                              &lista_estradas[i].custo);
+            custo_total_antes += lista_estradas[i].custo;
         }
 
-        for (int i = 0; i < m; i++) {
-            pai[i] = i;
-        }
+        // mergesort manual
+        ordenar_por_custo(0, qtd_estradas - 1);
 
-        qsort(arestas, n, sizeof(Aresta), comparar);
+        // kruskal
+        for (int i = 0; i < qtd_cidades; i++) {
+            chefe_grupo[i] = i;
+        }
 
         long long custo_mst = 0;
         
-        for (int i = 0; i < n; i++) {
-            if (buscar(arestas[i].origem) != buscar(arestas[i].destino)) {
-                unir(arestas[i].origem, arestas[i].destino);
-                custo_mst += arestas[i].peso;
+        for (int i = 0; i < qtd_estradas; i++) {
+            int u = lista_estradas[i].origem;
+            int v = lista_estradas[i].destino;
+            
+            if (encontrar_chefe(u) != encontrar_chefe(v)) {
+                unir_conjuntos(u, v);
+                custo_mst += lista_estradas[i].custo;
             }
         }
 
-        printf("%lld\n", custo_total - custo_mst);
+        
+        printf("%lld\n", custo_total_antes - custo_mst);
     }
 
     return 0;

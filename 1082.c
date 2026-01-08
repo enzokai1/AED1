@@ -1,67 +1,99 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
-int adj[26][26];
-int visitado[26];
-int lista[26];
-int tam_lista;
-int V, A;
 
-int comparar(const void *a, const void *b) {
-    return (*(int*)a - *(int*)b);
+int matriz_adj[30][30];
+int visitados[30];
+int num_vertices, num_arestas;
+
+
+int componente_atual[30];
+int tamanho_componente;
+
+
+void ordenar_vetor() {
+    for (int i = 0; i < tamanho_componente - 1; i++) {
+        for (int j = 0; j < tamanho_componente - i - 1; j++) {
+            if (componente_atual[j] > componente_atual[j + 1]) {
+                
+                int temp = componente_atual[j];
+                componente_atual[j] = componente_atual[j + 1];
+                componente_atual[j + 1] = temp;
+            }
+        }
+    }
 }
 
+//busca em profundidade
 void dfs(int u) {
-    visitado[u] = 1;
-    lista[tam_lista++] = u;
-    for (int v = 0; v < V; v++) {
-        if (adj[u][v] && !visitado[v]) {
+    visitados[u] = 1; // visitado
+    
+    
+    componente_atual[tamanho_componente] = u;
+    tamanho_componente++;
+    
+    
+    for (int v = 0; v < num_vertices; v++) {
+        
+        if (matriz_adj[u][v] == 1 && visitados[v] == 0) {
             dfs(v);
         }
     }
 }
 
 int main() {
-    int N;
-    if (scanf("%d", &N) != 1) return 0;
+    int casos_teste;
+    scanf("%d", &casos_teste);
 
-    for (int caso = 1; caso <= N; caso++) {
-        scanf("%d %d", &V, &A);
+    for (int k = 1; k <= casos_teste; k++) {
+        scanf("%d %d", &num_vertices, &num_arestas);
 
-        for (int i = 0; i < V; i++) {
-            for (int j = 0; j < V; j++) {
-                adj[i][j] = 0;
+        
+        for (int i = 0; i < num_vertices; i++) {
+            visitados[i] = 0;
+            for (int j = 0; j < num_vertices; j++) {
+                matriz_adj[i][j] = 0;
             }
-            visitado[i] = 0;
         }
 
-        for (int i = 0; i < A; i++) {
-            char u, v;
-            scanf(" %c %c", &u, &v);
-            adj[u - 'a'][v - 'a'] = 1;
-            adj[v - 'a'][u - 'a'] = 1;
+       
+        for (int i = 0; i < num_arestas; i++) {
+            char u_char, v_char;
+            
+            scanf(" %c %c", &u_char, &v_char);
+            
+            
+            int u = u_char - 'a';
+            int v = v_char - 'a';
+            
+            matriz_adj[u][v] = 1;
+            matriz_adj[v][u] = 1; // grafo nao direcionado
         }
 
-        printf("Case #%d:\n", caso);
+        printf("Case #%d:\n", k);
 
-        int total_componentes = 0;
-        for (int i = 0; i < V; i++) {
-            if (!visitado[i]) {
-                total_componentes++;
-                tam_lista = 0;
-                dfs(i);
+        int qtd_conexoes = 0;
+
+       
+        for (int i = 0; i < num_vertices; i++) {
+            
+            if (visitados[i] == 0) {
+                qtd_conexoes++;
+                tamanho_componente = 0; 
                 
-                qsort(lista, tam_lista, sizeof(int), comparar);
+                dfs(i); 
                 
-                for (int j = 0; j < tam_lista; j++) {
-                    printf("%c,", lista[j] + 'a');
+                ordenar_vetor(); 
+                
+                
+                for (int j = 0; j < tamanho_componente; j++) {
+                    
+                    printf("%c,", componente_atual[j] + 'a');
                 }
                 printf("\n");
             }
         }
 
-        printf("%d connected components\n\n", total_componentes);
+        printf("%d connected components\n\n", qtd_conexoes);
     }
 
     return 0;

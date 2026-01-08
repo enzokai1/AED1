@@ -1,73 +1,110 @@
 #include <stdio.h>
-#include <stdlib.h>
+#include <stdlib.h> 
 
-typedef struct No {
+struct No {
     int valor;
-    struct No *esq, *dir;
-} No;
+    struct No *esquerda;
+    struct No *direita;
+};
 
-No* criar(int valor) {
-    No* novo = (No*)malloc(sizeof(No));
-    novo->valor = valor;
-    novo->esq = novo->dir = NULL;
+
+struct No* criar_no(int v) {
+    
+    struct No* novo = (struct No*) malloc(sizeof(struct No));
+
+    
+    novo->valor = v;
+    novo->esquerda = NULL;
+    novo->direita = NULL;
+    
     return novo;
 }
 
-No* inserir(No* raiz, int valor) {
-    if (raiz == NULL) return criar(valor);
-    if (valor < raiz->valor)
-        raiz->esq = inserir(raiz->esq, valor);
-    else
-        raiz->dir = inserir(raiz->dir, valor);
+struct No* inserir(struct No* raiz, int v) {
+    
+    if (raiz == NULL) {
+        return criar_no(v);
+    }
+    
+    
+    if (v < raiz->valor) {
+        raiz->esquerda = inserir(raiz->esquerda, v);
+    }
+    
+    else {
+        raiz->direita = inserir(raiz->direita, v);
+    }
+    
     return raiz;
 }
 
-void bfs(No* raiz) {
+
+void imprimir_por_nivel(struct No* raiz) {
     if (raiz == NULL) return;
     
-    No* fila[505];
-    int inicio = 0, fim = 0;
     
-    fila[fim++] = raiz;
-    int primeiro = 1;
+    struct No* fila[505];
+    int inicio = 0;
+    int fim = 0;
+    
+    // enfileira a raiz
+    fila[fim] = raiz;
+    fim++;
+    
+    int primeiro = 1; 
     
     while (inicio < fim) {
-        No* atual = fila[inicio++];
+        // desenfileira
+        struct No* atual = fila[inicio];
+        inicio++;
         
-        if (!primeiro) printf(" ");
+        if (primeiro == 0) printf(" ");
         printf("%d", atual->valor);
         primeiro = 0;
         
-        if (atual->esq) fila[fim++] = atual->esq;
-        if (atual->dir) fila[fim++] = atual->dir;
+        // enfileira filhos se existirem
+        if (atual->esquerda != NULL) {
+            fila[fim] = atual->esquerda;
+            fim++;
+        }
+        if (atual->direita != NULL) {
+            fila[fim] = atual->direita;
+            fim++;
+        }
     }
 }
 
-void liberar(No* raiz) {
+
+void liberar_arvore(struct No* raiz) {
     if (raiz == NULL) return;
-    liberar(raiz->esq);
-    liberar(raiz->dir);
-    free(raiz);
+    
+    liberar_arvore(raiz->esquerda); 
+    liberar_arvore(raiz->direita);  
+    free(raiz);                     
 }
 
 int main() {
-    int c, n, valor;
-    scanf("%d", &c);
+    int casos_teste;
+    scanf("%d", &casos_teste);
 
-    for (int i = 1; i <= c; i++) {
+    for (int i = 1; i <= casos_teste; i++) {
+        int n;
         scanf("%d", &n);
-        No* raiz = NULL;
-
+        
+        struct No* raiz = NULL; 
+        
         for (int j = 0; j < n; j++) {
+            int valor;
             scanf("%d", &valor);
             raiz = inserir(raiz, valor);
         }
 
         printf("Case %d:\n", i);
-        bfs(raiz);
+        imprimir_por_nivel(raiz);
         printf("\n\n");
 
-        liberar(raiz);
+        
+        liberar_arvore(raiz);
     }
 
     return 0;

@@ -1,98 +1,108 @@
 #include <stdio.h>
 #include <stdlib.h> 
-#include <string.h> 
 
-int checarGrupo(int group[9]) {
-    int check[10];
+
+int verificar_conjunto(int vetor[9]) {
+    int numeros_vistos[10]; 
     
-    memset(check, 0, sizeof(check));
-
-    for (int i = 0; i < 9; i++) {
-        int num = group[i];
-        
-        if (num < 1 || num > 9 || check[num] == 1) {
-            return 0; 
-        }
-        
-        check[num] = 1;
+    
+    for (int i = 0; i <= 9; i++) {
+        numeros_vistos[i] = 0;
     }
 
-    return 1; 
+    for (int i = 0; i < 9; i++) {
+        int numero = vetor[i];
+        
+        if (numero < 1 || numero > 9) return 0;
+        if (numeros_vistos[numero] == 1) return 0;
+        
+        numeros_vistos[numero] = 1;
+    }
+    return 1;
 }
 
 int main() {
-    int n, k;
-    scanf("%d", &n); 
+    int n_instancias;
+    scanf("%d", &n_instancias);
 
-    for (k = 1; k <= n; k++) {
+    for (int k = 1; k <= n_instancias; k++) {
         
-        int** grid = (int**) malloc(9 * sizeof(int*));
-        if (grid == NULL) return 1; 
-
-        for (int i = 0; i < 9; i++) {
-            grid[i] = (int*) malloc(9 * sizeof(int));
-            if (grid[i] == NULL) return 1; 
-        }
+        // alocando dinamicamente
+        int **tabuleiro = (int**) malloc(9 * sizeof(int*));
         
         for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
-                scanf("%d", &grid[i][j]);
-            }
+            tabuleiro[i] = (int*) malloc(9 * sizeof(int));
         }
         
-        int ehValido = 1;
-        int tempGrupo[9]; 
-
+        
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
-                tempGrupo[j] = grid[i][j];
+                scanf("%d", &tabuleiro[i][j]);
             }
-            if (!checarGrupo(tempGrupo)) {
-                ehValido = 0;
+        }
+        
+        int eh_valido = 1;
+        int vetor_teste[9]; 
+
+        // verifica Linhas
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                vetor_teste[j] = tabuleiro[i][j];
+            }
+            if (verificar_conjunto(vetor_teste) == 0) {
+                eh_valido = 0;
+                break;
             }
         }
 
-        if (ehValido) { 
+        // verifica colunas
+        if (eh_valido) {
             for (int j = 0; j < 9; j++) {
                 for (int i = 0; i < 9; i++) {
-                    tempGrupo[i] = grid[i][j];
+                    vetor_teste[i] = tabuleiro[i][j];
                 }
-                if (!checarGrupo(tempGrupo)) {
-                    ehValido = 0;
+                if (verificar_conjunto(vetor_teste) == 0) {
+                    eh_valido = 0;
+                    break;
                 }
             }
         }
-        
-        if (ehValido) { 
-            for (int startRow = 0; startRow < 9; startRow += 3) {
-                for (int startCol = 0; startCol < 9; startCol += 3) {
+
+        // verifica bloco
+        if (eh_valido) {
+            for (int linha_bloco = 0; linha_bloco < 9; linha_bloco += 3) {
+                for (int col_bloco = 0; col_bloco < 9; col_bloco += 3) {
                     
                     int idx = 0;
                     for (int i = 0; i < 3; i++) {
                         for (int j = 0; j < 3; j++) {
-                            tempGrupo[idx++] = grid[startRow + i][startCol + j];
+                            vetor_teste[idx] = tabuleiro[linha_bloco + i][col_bloco + j];
+                            idx++;
                         }
                     }
                     
-                    if (!checarGrupo(tempGrupo)) {
-                        ehValido = 0;
+                    if (verificar_conjunto(vetor_teste) == 0) {
+                        eh_valido = 0;
+                        linha_bloco = 9; 
+                        break;
                     }
                 }
             }
         }
         
         printf("Instancia %d\n", k);
-        if (ehValido) {
+        if (eh_valido) {
             printf("SIM\n");
         } else {
             printf("NAO\n");
         }
-        printf("\n"); 
-        
+        printf("\n");
+
+      
         for (int i = 0; i < 9; i++) {
-            free(grid[i]); 
+            free(tabuleiro[i]);
         }
-        free(grid); 
+        free(tabuleiro);
     }
 
     return 0;

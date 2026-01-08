@@ -1,89 +1,121 @@
 #include <stdio.h>
 
-#define INFINITO 10000000
-#define MAX 505
 
-int adj[MAX][MAX];
-int dist[MAX];
-int visitado[MAX];
-int N, E;
+int matriz_adj[505][505];
+int distancia[505];
+int nos_processados[505];
 
-int dijkstra(int origem, int destino) {
-    for (int i = 1; i <= N; i++) {
-        dist[i] = INFINITO;
-        visitado[i] = 0;
+int num_cidades, num_acordos;
+
+//encontra o menor caminho da origem ate o destino e retorna o custo ou infinito se nao tem caminho
+int calcular_dijkstra(int origem, int destino) {
+    
+    for (int i = 1; i <= num_cidades; i++) {
+        distancia[i] = 10000000; // infinito
+        nos_processados[i] = 0;  // nao foi visitado
     }
     
-    dist[origem] = 0;
+    distancia[origem] = 0;
     
-    for (int i = 0; i < N; i++) {
-        int u = -1;
-        int min_val = INFINITO;
+    
+    for (int i = 0; i < num_cidades; i++) {
         
-        for (int j = 1; j <= N; j++) {
-            if (!visitado[j] && dist[j] < min_val) {
-                min_val = dist[j];
-                u = j;
+        // escolher o nó com menor distância que ainda não foi processado
+        int atual = -1;
+        int menor_valor = 10000000;
+        
+        for (int j = 1; j <= num_cidades; j++) {
+            if (nos_processados[j] == 0 && distancia[j] < menor_valor) {
+                menor_valor = distancia[j];
+                atual = j;
             }
         }
         
-        if (u == -1) break;
-        visitado[u] = 1;
+        // se não achou ninguém ou o menor valor é infinito, nao tem caminho
+        if (atual == -1 || menor_valor == 10000000) break;
         
-        if (u == destino) return dist[u];
+        nos_processados[atual] = 1; 
         
-        for (int v = 1; v <= N; v++) {
-            if (adj[u][v] != INFINITO) {
-                if (dist[u] + adj[u][v] < dist[v]) {
-                    dist[v] = dist[u] + adj[u][v];
+       
+        if (atual == destino) return distancia[destino];
+        
+       
+        for (int vizinho = 1; vizinho <= num_cidades; vizinho++) {
+            
+            if (matriz_adj[atual][vizinho] != 10000000) {
+                
+                if (distancia[atual] + matriz_adj[atual][vizinho] < distancia[vizinho]) {
+                    distancia[vizinho] = distancia[atual] + matriz_adj[atual][vizinho];
                 }
             }
         }
     }
-    return dist[destino];
+    
+    return distancia[destino];
 }
 
 int main() {
-    while (1) {
-        if (scanf("%d %d", &N, &E) != 2) break;
-        if (N == 0 && E == 0) break;
+    
+    while (scanf("%d %d", &num_cidades, &num_acordos) == 2 && num_cidades != 0) {
         
-        for (int i = 1; i <= N; i++) {
-            for (int j = 1; j <= N; j++) {
-                adj[i][j] = INFINITO;
-            }
-            adj[i][i] = 0;
-        }
-        
-        for (int i = 0; i < E; i++) {
-            int x, y, h;
-            scanf("%d %d %d", &x, &y, &h);
-            adj[x][y] = h;
-        }
-        
-        for (int i = 1; i <= N; i++) {
-            for (int j = 1; j <= N; j++) {
-                if (adj[i][j] != INFINITO && adj[j][i] != INFINITO) {
-                    adj[i][j] = 0;
-                    adj[j][i] = 0;
+       
+        for (int i = 1; i <= num_cidades; i++) {
+            for (int j = 1; j <= num_cidades; j++) {
+                
+                if (i == j) {
+                    matriz_adj[i][j] = 0;
+                } else {
+                    matriz_adj[i][j] = 10000000;
                 }
             }
         }
         
-        int K;
-        scanf("%d", &K);
-        while (K--) {
-            int O, D;
-            scanf("%d %d", &O, &D);
-            int res = dijkstra(O, D);
+       
+        for (int i = 0; i < num_acordos; i++) {
+            int x, y, horas;
+            scanf("%d %d %d", &x, &y, &horas);
             
-            if (res == INFINITO) {
-                printf("Nao e possivel entregar a carta\n");
-            } else {
-                printf("%d\n", res);
+            // grafo direcionado, vai de x para y com custo horas
+            // se já tiver um multigrafo la , pegamos a menor 
+            // mas o problema garante arestas únicas.
+            matriz_adj[x][y] = horas;
+        }
+        
+      
+           
+        //Se existe ida (i->j) E volta (j->i), o custo vira 0 para ambos.   
+        for (int i = 1; i <= num_cidades; i++) {
+            for (int j = 1; j <= num_cidades; j++) {
+                if (i != j) { // Não compara cidade com ela mesma
+                 
+                    if (matriz_adj[i][j] != 10000000 && matriz_adj[j][i] != 10000000) {
+                        matriz_adj[i][j] = 0;
+                        matriz_adj[j][i] = 0;
+                    }
+                }
             }
         }
-        printf("\n");
+        
+        
+        int qtd_consultas;
+        scanf("%d", &qtd_consultas);
+        
+        while (qtd_consultas > 0) {
+            int origem, destino;
+            scanf("%d %d", &origem, &destino);
+            
+            int resultado = calcular_dijkstra(origem, destino);
+            
+            if (resultado == 10000000) {
+                printf("Nao e possivel entregar a carta\n");
+            } else {
+                printf("%d\n", resultado);
+            }
+            
+            qtd_consultas--;
+        }
+        
+        printf("\n"); 
     }
     
     return 0;

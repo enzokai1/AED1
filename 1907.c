@@ -1,74 +1,92 @@
 #include <stdio.h>
+#include <stdlib.h>
 
-#define MAX 1025
-#define STACK_SIZE 1050000
 
-typedef struct {
-    int x, y;
-} Ponto;
+struct Coordenada {
+    int linha;
+    int coluna;
+};
 
-char imagem[MAX][MAX];
-int N, M;
 
-Ponto pilha[STACK_SIZE];
-int topo = 0;
+char mapa[1025][1025];
+int linhas, colunas;
 
-void push(int x, int y) {
-    if (topo < STACK_SIZE) {
-        pilha[topo].x = x;
-        pilha[topo].y = y;
-        topo++;
+
+struct Coordenada pilha_trabalho[1050000];
+int topo_pilha = 0;
+
+
+
+void empilhar(int l, int c) {
+    // so insere se nao estourar o limite
+    if (topo_pilha < 1050000) {
+        pilha_trabalho[topo_pilha].linha = l;
+        pilha_trabalho[topo_pilha].coluna = c;
+        topo_pilha++;
     }
 }
 
-Ponto pop() {
-    topo--;
-    return pilha[topo];
+struct Coordenada desempilhar() {
+    topo_pilha--;
+    return pilha_trabalho[topo_pilha];
 }
 
-void floodFillIterativo(int i, int j) {
-    push(i, j);
-    imagem[i][j] = 'o'; 
 
-    while (topo > 0) {
-        Ponto p = pop();
-        int x = p.x;
-        int y = p.y;
+void preencher_area(int l_inicial, int c_inicial) {
+    empilhar(l_inicial, c_inicial);
+    mapa[l_inicial][c_inicial] = 'o'; //ja visitei / contei
 
-        int dx[] = {1, -1, 0, 0};
-        int dy[] = {0, 0, 1, -1};
+    while (topo_pilha > 0) {
+        struct Coordenada atual = desempilhar();
+        
+        int l = atual.linha;
+        int c = atual.coluna;
 
+        //cima baixo direita e esquerda
+        int muda_linha[] = {1, -1, 0, 0};
+        int muda_coluna[] = {0, 0, 1, -1};
+
+        //testa as direcoes
         for (int k = 0; k < 4; k++) {
-            int nx = x + dx[k];
-            int ny = y + dy[k];
+            int nova_l = l + muda_linha[k];
+            int nova_c = c + muda_coluna[k];
 
-            if (nx >= 0 && nx < N && ny >= 0 && ny < M && imagem[nx][ny] == '.') {
-                imagem[nx][ny] = 'o'; 
-                push(nx, ny);
+            // ve se ta dentro e e valido
+            if (nova_l >= 0 && nova_l < linhas && 
+                nova_c >= 0 && nova_c < colunas && 
+                mapa[nova_l][nova_c] == '.') {
+                
+                mapa[nova_l][nova_c] = 'o'; 
+                empilhar(nova_l, nova_c);   
             }
         }
     }
 }
 
 int main() {
-    if (scanf("%d %d", &N, &M) != 2) return 0;
+   
+    if (scanf("%d %d", &linhas, &colunas) != 2) return 0;
 
-    for (int i = 0; i < N; i++) {
-        scanf("%s", imagem[i]);
+    
+    for (int i = 0; i < linhas; i++) {
+        scanf("%s", mapa[i]);
     }
 
-    int cliques = 0;
+    int total_cliques = 0;
 
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < M; j++) {
-            if (imagem[i][j] == '.') {
-                cliques++;
-                floodFillIterativo(i, j);
+    // procura por pontos nao visitados
+    for (int i = 0; i < linhas; i++) {
+        for (int j = 0; j < colunas; j++) {
+            if (mapa[i][j] == '.') {
+                //achou nova area
+                total_cliques++;
+                // chama a funcao pra pintar a area
+                preencher_area(i, j);
             }
         }
     }
 
-    printf("%d\n", cliques);
+    printf("%d\n", total_cliques);
 
     return 0;
 }

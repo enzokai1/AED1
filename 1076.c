@@ -1,43 +1,48 @@
 #include <stdio.h>
-#include <stdlib.h>
 
-#define MAX 100
+
+int matriz_adj[55][55];
 
 int main() {
-    int T;
-    if (scanf("%d", &T) != 1) return 0;
+    int casos_teste;
+    if (scanf("%d", &casos_teste) != 1) return 0;
 
-    while (T--) {
-        int inicio;
-        scanf("%d", &inicio);
+    while (casos_teste--) {
+        int ponto_inicio;
+        scanf("%d", &ponto_inicio); 
 
-        int V, A;
-        scanf("%d %d", &V, &A);
+        int qtd_vertices, qtd_arestas;
+        scanf("%d %d", &qtd_vertices, &qtd_arestas);
 
-        int adj[MAX][MAX];
-        for (int i = 0; i < MAX; i++) {
-            for (int j = 0; j < MAX; j++) {
-                adj[i][j] = 0;
+       
+        for (int i = 0; i < qtd_vertices; i++) {
+            for (int j = 0; j < qtd_vertices; j++) {
+                matriz_adj[i][j] = 0;
             }
         }
 
-        for (int i = 0; i < A; i++) {
+        
+        for (int i = 0; i < qtd_arestas; i++) {
             int u, v;
             scanf("%d %d", &u, &v);
-            adj[u][v] = 1;
-            adj[v][u] = 1;
+            
+            // grafo nao direcionado
+            matriz_adj[u][v] = 1;
+            matriz_adj[v][u] = 1;
         }
 
-        int movimentos = 0;
-        for (int i = 0; i < MAX; i++) {
-            for (int j = 0; j < MAX; j++) {
-                if (adj[i][j] == 1) {
-                    movimentos++;
+       // desenhar o labirinto todo e volta, passando 2 vezes por linha, entao basta somar quando 1 existem na matriz
+        int total_movimentos = 0;
+        
+        for (int i = 0; i < qtd_vertices; i++) {
+            for (int j = 0; j < qtd_vertices; j++) {
+                if (matriz_adj[i][j] == 1) {
+                    total_movimentos++;
                 }
             }
         }
 
-        printf("%d\n", movimentos);
+        printf("%d\n", total_movimentos);
     }
 
     return 0;

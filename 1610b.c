@@ -1,82 +1,102 @@
 #include <stdio.h>
 
-#define N_MAX 10001
-#define M_MAX 30001
+int cabeca_lista[10005];   
+int destino_aresta[30005]; 
+int prox_aresta[30005];    
+int contador_arestas;      
 
-int inicio_lista[N_MAX];
-int vertice_destino[M_MAX];
-int proxima_aresta[M_MAX];
-int contador_arestas;
+// 0 = nao visitei
+// 1 = visitando
+// 2 = visitado
+int estado_vertice[10005];
 
-int visitado[N_MAX];
-int tem_ciclo;
+int ciclo_encontrado; 
 
-void inicializar_grafo(int N) {
+
+void limpar_grafo(int qtd_vertices) {
     contador_arestas = 0;
-    tem_ciclo = 0;
-    for (int i = 1; i <= N; i++) {
-        inicio_lista[i] = -1;
-        visitado[i] = 0;
+    ciclo_encontrado = 0;
+    
+    
+    for (int i = 1; i <= qtd_vertices; i++) {
+        cabeca_lista[i] = -1; 
+        estado_vertice[i] = 0; 
     }
 }
 
-void adicionar_aresta(int u, int v) {
-    vertice_destino[contador_arestas] = v;
-    proxima_aresta[contador_arestas] = inicio_lista[u];
-    inicio_lista[u] = contador_arestas;
+
+void criar_dependencia(int origem, int destino) {
+    destino_aresta[contador_arestas] = destino;
+    prox_aresta[contador_arestas] = cabeca_lista[origem];
+    cabeca_lista[origem] = contador_arestas;
     contador_arestas++;
 }
 
-void busca_profundidade(int u) {
-    if (tem_ciclo) return;
 
-    visitado[u] = 1;
+// se eu encontrar um vizinho "1", eu achei um caminho de volta pra alguem que esta sendo visitado. Busca em profundidade 
+void verificar_ciclo_dfs(int u) {
+    
+    if (ciclo_encontrado == 1) return;
 
-    for (int i = inicio_lista[u]; i != -1; i = proxima_aresta[i]) {
-        int v = vertice_destino[i];
+    estado_vertice[u] = 1; 
 
-        if (visitado[v] == 0) {
-            busca_profundidade(v);
-            if (tem_ciclo) return;
-        } else if (visitado[v] == 1) {
-            tem_ciclo = 1;
+    
+    for (int i = cabeca_lista[u]; i != -1; i = prox_aresta[i]) {
+        int vizinho = destino_aresta[i];
+
+        if (estado_vertice[vizinho] == 1) {
+           
+            ciclo_encontrado = 1;
             return;
+        } 
+        else if (estado_vertice[vizinho] == 0) {
+            //nao visitei ainda
+            verificar_ciclo_dfs(vizinho);
+            if (ciclo_encontrado == 1) return;
         }
+        //totalmente visitado
     }
 
-    visitado[u] = 2;
+    estado_vertice[u] = 2; // visitei ele e os filhos
 }
 
 int main() {
-    int T;
-    scanf("%d", &T);
+    int casos_teste;
+    scanf("%d", &casos_teste);
 
-    while (T--) {
-        int N, M;
+    
+    while (casos_teste > 0) {
+        int N, M; 
         scanf("%d %d", &N, &M);
 
-        inicializar_grafo(N);
+        limpar_grafo(N);
 
+       
         for (int i = 0; i < M; i++) {
-            int A, B;
-            scanf("%d %d", &A, &B);
-            adicionar_aresta(A, B);
+            int docA, docB;
+            scanf("%d %d", &docA, &docB);
+            criar_dependencia(docA, docB);
         }
 
+       
         for (int i = 1; i <= N; i++) {
-            if (visitado[i] == 0) {
-                busca_profundidade(i);
-                if (tem_ciclo) {
-                    break;
+            if (estado_vertice[i] == 0) {
+                verificar_ciclo_dfs(i);
+                
+                //achou, parou
+                if (ciclo_encontrado == 1) {
+                    break; 
                 }
             }
         }
 
-        if (tem_ciclo) {
+        if (ciclo_encontrado == 1) {
             printf("SIM\n");
         } else {
             printf("NAO\n");
         }
+        
+        casos_teste--;
     }
 
     return 0;

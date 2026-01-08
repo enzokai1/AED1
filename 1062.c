@@ -1,88 +1,85 @@
 #include <stdio.h>
-#include <string.h>
+#include <stdlib.h>
 
-#define MAX_TAM 1001 
+//pilha estatica
+typedef struct {
+    int vagoes[1005];
+    int topo;
+} Pilha;
 
-int pilha[MAX_TAM]; 
-int topo;            
-
-void inicializarPilha() {
-    topo = -1;
+void inicializar(Pilha *p) {
+    p->topo = -1;
 }
 
-int estaVazia() {
-    return (topo == -1);
+int esta_vazia(Pilha *p) {
+    if (p->topo == -1) return 1;
+    return 0;
 }
 
-void empilhar(int c) {
-    topo++;
-    pilha[topo] = c;
+void empilhar(Pilha *p, int vagao) {
+    p->topo++;
+    p->vagoes[p->topo] = vagao;
 }
 
-int desempilhar() {
-    int val = pilha[topo];
-    topo--;
-    return val;
+void desempilhar(Pilha *p) {
+    if (!esta_vazia(p)) {
+        p->topo--;
+    }
 }
 
-int verTopo() {
-    return pilha[topo];
+int ver_topo(Pilha *p) {
+    if (!esta_vazia(p)) {
+        return p->vagoes[p->topo];
+    }
+    return -1; //erro ou pilha vazia
 }
 
 int main() {
-    int N;
-    int saida_desejada[MAX_TAM];
+    int n;
+    int vetor_saida[1005];
+
     
-    int primeiroBloco = 1; 
-
-    while (scanf("%d", &N) == 1 && N != 0) {
+    while (scanf("%d", &n) == 1 && n != 0) {
         
-        if (!primeiroBloco) {
-            printf("\n");
-        }
-        primeiroBloco = 0;
-
+        
         while (1) {
             
-            scanf("%d", &saida_desejada[0]);
+            scanf("%d", &vetor_saida[0]);
             
-            if (saida_desejada[0] == 0) {
+            
+            if (vetor_saida[0] == 0) {
+                printf("\n"); 
                 break;
             }
             
-            for (int i = 1; i < N; i++) {
-                scanf("%d", &saida_desejada[i]);
+           
+            for (int i = 1; i < n; i++) {
+                scanf("%d", &vetor_saida[i]);
             }
             
-            inicializarPilha();
-            int vagao_A = 1;     
-            int idx_saida = 0;   
-            int possivel = 1;    
-
-            while (idx_saida < N) {
+            
+            Pilha estacao;
+            inicializar(&estacao);
+            
+            int vagao_que_chega = 1; 
+            int indice_saida = 0;    // pra saber qual vagao despachar
+            
+            
+            while (vagao_que_chega <= n) {
                 
-                if (!estaVazia() && verTopo() == saida_desejada[idx_saida]) {
-                    desempilhar();
-                    idx_saida++;
                 
-                } else if (vagao_A <= N) {
-                    
-                    if (vagao_A == saida_desejada[idx_saida]) {
-                        vagao_A++;
-                        idx_saida++;
-                    
-                    } else {
-                        empilhar(vagao_A);
-                        vagao_A++;
-                    }
+                empilhar(&estacao, vagao_que_chega);
+                vagao_que_chega++;
                 
-                } else {
-                    possivel = 0;
-                    break;
+               
+                while (!esta_vazia(&estacao) && ver_topo(&estacao) == vetor_saida[indice_saida]) {
+                    desempilhar(&estacao); 
+                    indice_saida++;       
                 }
             }
-
-            if (possivel) {
+            
+            
+            if (esta_vazia(&estacao)) {
                 printf("Yes\n");
             } else {
                 printf("No\n");
@@ -90,7 +87,5 @@ int main() {
         }
     }
     
-    printf("\n");
-
     return 0;
 }

@@ -1,73 +1,88 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void swap(int* a, int* b) {
-    int t = *a;
+
+int vetor[3000005];
+
+// funcao pra trocar dois valores
+void trocar(int* a, int* b) {
+    int temp = *a;
     *a = *b;
-    *b = t;
+    *b = temp;
 }
 
-void heapify(int arr[], int n, int i) {
-    int largest = i;     
-    int l = 2 * i + 1; 
-    int r = 2 * i + 2; 
 
-    if (l < n && arr[l] > arr[largest]) {
-        largest = l;
-    }
+void peneira(int arr[], int n, int i) {
+    int maior = i;
+    
+    while (1) {
+        int esquerda = 2 * i + 1;
+        int direita = 2 * i + 2;
+        maior = i;
 
-    if (r < n && arr[r] > arr[largest]) {
-        largest = r;
-    }
+        // ve se o filho da esquerda é maior que o pai
+        if (esquerda < n && arr[esquerda] > arr[maior]) {
+            maior = esquerda;
+        }
 
-    if (largest != i) {
-        swap(&arr[i], &arr[largest]);
-        heapify(arr, n, largest);
+        // ve se o filho da direita é maior
+        if (direita < n && arr[direita] > arr[maior]) {
+            maior = direita;
+        }
+
+        
+        if (maior != i) {
+            trocar(&arr[i], &arr[maior]);
+            i = maior; 
+        } else {
+            break; 
+        }
     }
 }
 
-void heapSort(int arr[], int n) {
+void heap_sort(int arr[], int n) {
+    
     for (int i = n / 2 - 1; i >= 0; i--) {
-        heapify(arr, n, i);
+        peneira(arr, n, i);
     }
 
+   
     for (int i = n - 1; i > 0; i--) {
-        swap(&arr[0], &arr[i]);
-        heapify(arr, i, 0);
+       
+        trocar(&arr[0], &arr[i]);
+        
+        
+        peneira(arr, i, 0);
     }
 }
 
 int main() {
-    int NC;
-    scanf("%d", &NC);
+    int nc;
+    if (scanf("%d", &nc) != 1) return 0;
 
-    while (NC > 0) {
-        int N;
-        scanf("%d", &N);
+    while (nc > 0) {
+        int n;
+        if (scanf("%d", &n) != 1) break;
 
-        int* vetor = (int*) malloc(N * sizeof(int));
-
-        if (vetor == NULL) {
-            return 1; 
-        }
-
-        for (int i = 0; i < N; i++) {
+        
+        for (int i = 0; i < n; i++) {
             scanf("%d", &vetor[i]);
         }
 
-        heapSort(vetor, N);
+        
+        heap_sort(vetor, n);
 
-        for (int i = 0; i < N; i++) {
+        
+        for (int i = 0; i < n; i++) {
             printf("%d", vetor[i]);
-            if (i < N - 1) {
+            
+            if (i < n - 1) {
                 printf(" ");
             }
         }
         printf("\n");
-
-        free(vetor);
         
-        NC--;
+        nc--;
     }
     return 0;
 }

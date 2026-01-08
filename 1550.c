@@ -1,54 +1,73 @@
 #include <stdio.h>
 
-#define MAX 100000
 
-int inverter(int n) {
-    int inv = 0;
+int movimentos[100005]; 
+int fila_bfs[100005];   
+
+// funcao pra inverter o numero
+int inverter_numero(int n) {
+    int invertido = 0;
     while (n > 0) {
-        inv = inv * 10 + n % 10;
-        n /= 10;
+        invertido = invertido * 10 + (n % 10);
+        n = n / 10;
     }
-    return inv;
+    return invertido;
 }
 
 int main() {
-    int T;
-    if (scanf("%d", &T) != 1) return 0;
+    int casos_teste;
+    if (scanf("%d", &casos_teste) != 1) return 0;
 
-    while (T--) {
-        int A, B;
-        scanf("%d %d", &A, &B);
+    while (casos_teste > 0) {
+        int origem, destino;
+        scanf("%d %d", &origem, &destino);
         
-        static int dist[MAX];
-        static int fila[MAX];
+       // -1 mostra que nao foi visitado
+        for(int i = 0; i < 100000; i++) {
+            movimentos[i] = -1;
+        }
         
-        for(int i = 0; i < MAX; i++) dist[i] = -1;
+    
+        int inicio_fila = 0;
+        int fim_fila = 0;
         
-        int frente = 0, tras = 0;
         
-        fila[tras++] = A;
-        dist[A] = 0;
+        fila_bfs[fim_fila] = origem;
+        fim_fila++;
+        movimentos[origem] = 0;
         
-        while (frente < tras) {
-            int atual = fila[frente++];
+        // loop busca em largura
+        while (inicio_fila < fim_fila) {
             
-            if (atual == B) {
-                printf("%d\n", dist[atual]);
+            int atual = fila_bfs[inicio_fila];
+            inicio_fila++;
+            
+            
+            if (atual == destino) {
+                printf("%d\n", movimentos[atual]);
                 break;
             }
             
-            int prox1 = atual + 1;
-            if (prox1 < MAX && dist[prox1] == -1) {
-                dist[prox1] = dist[atual] + 1;
-                fila[tras++] = prox1;
+           
+            int proximo_soma = atual + 1;
+            
+            if (proximo_soma < 100000 && movimentos[proximo_soma] == -1) {
+                movimentos[proximo_soma] = movimentos[atual] + 1;
+                fila_bfs[fim_fila] = proximo_soma;
+                fim_fila++;
             }
             
-            int prox2 = inverter(atual);
-            if (prox2 < MAX && dist[prox2] == -1) {
-                dist[prox2] = dist[atual] + 1;
-                fila[tras++] = prox2;
+            
+            int proximo_inverso = inverter_numero(atual);
+            // ve se e valido e nao visitado
+            if (proximo_inverso < 100000 && movimentos[proximo_inverso] == -1) {
+                movimentos[proximo_inverso] = movimentos[atual] + 1;
+                fila_bfs[fim_fila] = proximo_inverso;
+                fim_fila++;
             }
         }
+        
+        casos_teste--;
     }
     return 0;
 }

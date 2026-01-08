@@ -1,85 +1,83 @@
 #include <stdio.h>
-#include <stdlib.h>
+#include <stdlib.h> 
 
-typedef struct No {
-    int valor;
+struct No {
+    int numero;
     struct No *esquerda;
     struct No *direita;
-} No;
+};
 
-No* criarNo(int valor) {
-    No* novoNo = (No*)malloc(sizeof(No));
-    if (novoNo == NULL) {
-        exit(1); 
-    }
-    novoNo->valor = valor;
-    novoNo->esquerda = NULL;
-    novoNo->direita = NULL;
-    return novoNo;
+
+struct No* criar_no(int n) {
+    struct No* novo = (struct No*) malloc(sizeof(struct No));
+    novo->numero = n;
+    novo->esquerda = NULL;
+    novo->direita = NULL;
+    return novo;
 }
 
-No* inserir(No* raiz, int valor) {
+
+struct No* inserir(struct No* raiz, int n) {
     if (raiz == NULL) {
-        return criarNo(valor);
+        return criar_no(n);
     }
 
-    if (valor < raiz->valor) {
-        raiz->esquerda = inserir(raiz->esquerda, valor);
+    if (n < raiz->numero) {
+        raiz->esquerda = inserir(raiz->esquerda, n);
     } else {
-        raiz->direita = inserir(raiz->direita, valor);
+        raiz->direita = inserir(raiz->direita, n);
     }
     
     return raiz;
 }
 
-void liberarArvore(No* raiz) {
-    if (raiz == NULL) {
-        return;
-    }
-    liberarArvore(raiz->esquerda);
-    liberarArvore(raiz->direita);
+
+void imprimir_prefixa(struct No* raiz) {
+    if (raiz == NULL) return;
+
+    printf(" %d", raiz->numero);
+    imprimir_prefixa(raiz->esquerda);
+    imprimir_prefixa(raiz->direita);
+}
+
+//em ordem
+void imprimir_infixa(struct No* raiz) {
+    if (raiz == NULL) return;
+
+    imprimir_infixa(raiz->esquerda);
+    printf(" %d", raiz->numero);
+    imprimir_infixa(raiz->direita);
+}
+
+// pos ordem
+void imprimir_posfixa(struct No* raiz) {
+    if (raiz == NULL) return;
+
+    imprimir_posfixa(raiz->esquerda);
+    imprimir_posfixa(raiz->direita);
+    printf(" %d", raiz->numero);
+}
+
+
+void destruir_arvore(struct No* raiz) {
+    if (raiz == NULL) return;
+    
+    destruir_arvore(raiz->esquerda);
+    destruir_arvore(raiz->direita);
     free(raiz);
 }
 
-void imprimirPreOrdem(No* raiz) {
-    if (raiz == NULL) {
-        return;
-    }
-    printf(" %d", raiz->valor);
-    imprimirPreOrdem(raiz->esquerda);
-    imprimirPreOrdem(raiz->direita);
-}
-
-void imprimirEmOrdem(No* raiz) {
-    if (raiz == NULL) {
-        return;
-    }
-    imprimirEmOrdem(raiz->esquerda);
-    printf(" %d", raiz->valor);
-    imprimirEmOrdem(raiz->direita);
-}
-
-void imprimirPosOrdem(No* raiz) {
-    if (raiz == NULL) {
-        return;
-    }
-    imprimirPosOrdem(raiz->esquerda);
-    imprimirPosOrdem(raiz->direita);
-    printf(" %d", raiz->valor);
-}
-
-
 int main() {
-    int C; 
-    scanf("%d", &C);
+    int casos_teste;
+    scanf("%d", &casos_teste);
 
-    for (int i = 1; i <= C; i++) {
-        int N; 
-        scanf("%d", &N);
+    for (int i = 1; i <= casos_teste; i++) {
+        int qtd_numeros;
+        scanf("%d", &qtd_numeros);
 
-        No* raiz = NULL; 
+        struct No* raiz = NULL;
         
-        for (int j = 0; j < N; j++) {
+        for (int j = 0; j < qtd_numeros; j++) {
             int valor;
             scanf("%d", &valor);
             raiz = inserir(raiz, valor);
@@ -87,21 +85,23 @@ int main() {
 
         printf("Case %d:\n", i);
 
+        
         printf("Pre.:");
-        imprimirPreOrdem(raiz);
+        imprimir_prefixa(raiz);
         printf("\n");
 
         printf("In..:");
-        imprimirEmOrdem(raiz);
+        imprimir_infixa(raiz);
         printf("\n");
 
         printf("Post:");
-        imprimirPosOrdem(raiz);
+        imprimir_posfixa(raiz);
+        printf("\n");
+        
+        
         printf("\n");
 
-        printf("\n");
-
-        liberarArvore(raiz);
+        destruir_arvore(raiz);
     }
 
     return 0;
